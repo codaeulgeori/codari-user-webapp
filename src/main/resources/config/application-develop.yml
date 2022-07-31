@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: codari-user
+  config:
+    use-legacy-processing: true
+  r2dbc:
+    url: r2dbc:mariadb://localhost:3306/codari-user?useSSL=false
+    username: codari-user
+    password: codari
+
