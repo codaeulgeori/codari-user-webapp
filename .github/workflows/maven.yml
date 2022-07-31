@@ -1,26 +1,46 @@
 # This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven
+name: CI CD
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ master, develop ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  build-deploy:
+    runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v3
+    - name: Check Out
+      uses: actions/checkout@v2
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v2
       with:
         java-version: '11'
-        distribution: 'temurin'
+        distribution: 'adopt'
         cache: maven
+        host: ${{ secrets.REMOTE_IP }}
+        username: ${{ secrets.REMOTE_SSH_ID }}
+        key: ${{ secrets.REMOTE_SSH_KEY }}
+        port: ${{ secrets.REMOTE_SSH_PORT }}
+    # Caching dependencies
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -DskipTests=true package --file pom.xml
+    - name: pwd
+      run: pwd
+    - name : check
+      run: du -ah
+    - name: CD-Stop App
+      run: sudo ssh -o StrictHostKeyChecking=no -i .github/workflows/key/jhpark-nuc-ssh.pri ubuntu@122.43.41.113 sudo systemctl stop codari-user
+    - name: CD-Copy Output
+      run: sudo scp -o StrictHostKeyChecking=no -i .github/workflows/key/jhpark-nuc-ssh.pri target/codari-user-webapp.jar ubuntu@122.43.41.113:codari/user-webapp
+    - name: CD-Start App
+      run: sudo ssh -o StrictHostKeyChecking=no -i .github/workflows/key/jhpark-nuc-ssh.pri ubuntu@122.43.41.113 sudo systemctl start codari-user
