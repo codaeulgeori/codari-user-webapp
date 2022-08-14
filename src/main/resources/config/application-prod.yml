@@ -1,13 +1,6 @@
-file:
-  path: '/home/jhpark/codari/user-webapp/log/'
-pattern:
-  file: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
-
 spring:
   application:
     name: codari-user
-  profiles:
-    include: file-logging
   config:
     use-legacy-processing: true
   r2dbc:
