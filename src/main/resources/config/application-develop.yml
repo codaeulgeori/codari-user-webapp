@@ -1,7 +1,8 @@
-file:
-  path: '/home/jhpark/codari/user-webapp/log/'
-pattern:
-  file: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+logging:
+  file:
+    path: '/home/jhpark/codari/user-webapp/log/'
+  pattern:
+    file: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
 
 spring:
   application:
@@ -14,4 +15,9 @@ spring:
     url: r2dbc:mariadb://localhost:3306/codari-user?useSSL=false
     username: codari-user
     password: codari
-
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    user: codari-user
+    password: codari
+    url: 'jdbc:mysql://localhost:3306/codari-user?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false'
