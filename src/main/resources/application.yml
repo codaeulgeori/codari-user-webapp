@@ -7,6 +7,7 @@ spring:
     name: codari-user
   config:
     use-legacy-processing: true
+  main.allow-bean-definition-overriding: true
   r2dbc:
     url: r2dbc:mariadb://localhost:3306/codari-user?useSSL=false
     username: codari-user
@@ -30,3 +31,30 @@ spring:
         use-sql-comments: false
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
 
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: 3ca7b5b6af230388cc1c04e985bd4128
+            client-secret: QzUA5LZYjfWeGVjNu3FtS5CVyviaYZKg
+            redirect-uri: 'http://3.38.36.193/login/oauth2/code/kakao'
+            authorization-grant-type: authorization_code
+            client-authentication-method: POST
+            client-name: Kakao
+            scope:
+              - profile_nickname
+              - profile_image
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: 'https://kauth.kakao.com/oauth/authorize'
+            token-uri: 'https://kauth.kakao.com/oauth/token'
+            user-info-uri: 'https://kapi.kakao.com/v2/user/me'
+            user-name-attribute: id
+
+
+app-security:
+  auth:
+    tokenSecret: CODARI-SECRET #JWT Secret Key
+    tokenExpirationMsec: 864000000
