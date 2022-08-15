@@ -25,5 +25,4 @@ public class User extends CommonEntity{
   @OneToOne(mappedBy = "userId", fetch = FetchType.LAZY)
   public UserOauth oauthInfo;
 
-
 }
