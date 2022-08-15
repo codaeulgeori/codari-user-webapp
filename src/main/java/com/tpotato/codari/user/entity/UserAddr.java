@@ -9,21 +9,25 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "tb_user_oauth")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Table(name = "tb_user_addr")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
-public class UserOauth extends CommonEntity{
+public class UserAddr {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  public Long userOauthId;
+  public Long userAddrId;
 
   @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
   public User userId;
 
-  public String vender;
-  public String providerId;
-  public String userName;
-  public String userProfileImage;
-  public String userEmail;
+  public String firstAddr;
+  public String secondAddr;
+  public String thirdAddr;
+  public String detailAddr;
+
+  public String latitude;
+  public String longitude;
 }

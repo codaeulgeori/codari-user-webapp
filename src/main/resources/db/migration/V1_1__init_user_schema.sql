@@ -4,9 +4,7 @@ drop table if exists tb_user_oauth;
 drop table if exists tb_user_addr;
 drop table if exists tb_user_phone;
 drop table if exists tb_user_favorite_board;
-
 drop table if exists tb_user;
-
 
 create table `codari-user`.tb_user (
    `user_id` bigint(20) NOT NULL AUTO_INCREMENT,
