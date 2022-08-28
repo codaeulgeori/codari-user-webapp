@@ -19,12 +19,13 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 @Slf4j @RequiredArgsConstructor
 @Service
-public class CustomOauth2UserService extends DefaultOAuth2UserService {
+public class CodariOauth2UserService extends DefaultOAuth2UserService {
 
   private final UserRepository userRepository;
 
@@ -49,14 +50,14 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
    * @param oAuth2User
    * @return
    */
-  private OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
+  private Mono<OAuth2User> processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
     OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
     if(StringUtils.isEmpty(oAuth2UserInfo.getEmail())) {
       throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
     }
 
     Optional<User> userOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
-    User user;
+    Mono<User> user;
     if(userOptional.isPresent()) {
       user = userOptional.get();
       if(!user.oauthInfo.providerName.equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
@@ -79,7 +80,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
    * @return
    */
   //TODO : oauthInfo table 에 userId 의 정보가 잘 들어가는지 확인 필요.
-  private User registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
+  private Mono<User> registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
     User user;
     try {
       user = User.builder()
@@ -108,7 +109,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
    * @param oAuth2UserInfo
    * @return
    */
-  private User updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
+  private Mono<User> updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
     existingUser.oauthInfo.update(
         oAuth2UserInfo.getName(),
         oAuth2UserInfo.getImageUrl()

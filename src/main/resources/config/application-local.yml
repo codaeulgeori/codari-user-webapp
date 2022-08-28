@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: codari-user-local
+  profiles:
+    include: console-logging
+  r2dbc:
+    url: r2dbc:mariadb://122.43.41.113:53306/codari-user?useSSL=false
+    username: codari-user
+    password: codari
+  jpa:
+    database: mysql
+    show-sql: true
+    properties:
+      hibernate:
+        show-sql: true
+        format-sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    user: codari-user
+    password: codari
+    url: 'jdbc:mysql://122.43.41.113:53306/codari-user?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false'
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: 'http://localhost:8080/login/oauth2/code/kakao'
+
+app-security:
+  oauth2:
+    authorizedRedirectUris:
+      - 'http://localhost:8080/oauth2/redirect'

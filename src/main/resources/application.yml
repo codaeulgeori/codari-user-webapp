@@ -17,20 +17,6 @@ spring:
       max-size: 500
       max-idle-time: 30m
       validation-query: SELECT 1
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL5Dialect
-    generate-ddl: true
-    show-sql: false
-    hibernate:
-      ddl-auto: update
-      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
-    properties:
-      hibernate:
-        show-sql: false
-        format-sql: false
-        use-sql-comments: false
-        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-
   security:
     oauth2:
       client:
