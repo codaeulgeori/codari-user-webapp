@@ -2,7 +2,7 @@ spring:
   application:
     name: codari-user-local
   profiles:
-    include: console-logging,oauth
+    include: console-logging
   r2dbc:
     url: r2dbc:mariadb://122.43.41.113:53306/codari-user?useSSL=false
     username: codari-user
@@ -27,6 +27,7 @@ spring:
           kakao:
             client-id: 3ca7b5b6af230388cc1c04e985bd4128
             client-secret: QzUA5LZYjfWeGVjNu3FtS5CVyviaYZKg
+            redirect-uri: 'http://localhost:8080/login/oauth2/code/kakao'
             authorization-grant-type: authorization_code
             client-authentication-method: POST
             client-name: Kakao

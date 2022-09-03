@@ -7,16 +7,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 import reactor.core.publisher.Mono;
 
@@ -24,28 +20,27 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Configuration
 @EnableWebFluxSecurity
-@EnableGlobalMethodSecurity(
-    securedEnabled = true,
-    jsr250Enabled = true,
-    prePostEnabled = true
-)
+@EnableReactiveMethodSecurity
 public class Oauth2SecurityConfig  {
 
   private final CodariOauth2UserService oAuth2UserService;
 
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
-    http
+    return http
           .cors()
         .and()
-          .csrf(c -> c
-              .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-          )
-        .authorizeExchange((exchange) -> {
-              exchange.pathMatchers(HttpMethod.OPTIONS).permitAll()
-              .pathMatchers("/", "/error","/login").permitAll()
-              .anyExchange().authenticated();
-        })
+
+        .csrf()
+            .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+        .and()
+
+        .authorizeExchange()
+              .pathMatchers(HttpMethod.OPTIONS).permitAll()
+              .pathMatchers("/", "/error","/login/**", "/oauth2/**").permitAll()
+              .anyExchange().authenticated()
+        .and()
+
         .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
             .authenticationEntryPoint((exchange, ex) -> {
               return Mono.fromRunnable(() -> {
@@ -61,14 +56,14 @@ public class Oauth2SecurityConfig  {
 //              .logoutSuccessUrl("/").permitAll()
 //          )
 //          .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
-        .oauth2Login();
-//
-//
-//          .oauth2Login()
-//              .authenticationConverter(converter)
-//              .authenticationManager(manager)
-//              .authorizedClientRepository(authorizedClients)
-//              .clientRegistrationRepository(clientRegistrations);
+
+        .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // stateless방식의 애플리케이션이 되도록 설정
+        .oauth2Client(Customizer.withDefaults())
+        .build();
+//            .authenticationConverter(converter)
+//            .authenticationManager(reactiveAuthenticationManager) // 인증 여부 체크
+//            .authorizedClientRepository(authorizedClients)
+//            .clientRegistrationRepository(clientRegistrations);
 //              //client 처음 로그인 시도 uri
 //              .baseUri("/oauth2/authorize")
 //              .authorizationRequestRepository(cookieAuthorizationRequestRepository())
@@ -81,7 +76,6 @@ public class Oauth2SecurityConfig  {
 //        });
 
 
-    return http.build();
   }
 
   /**
