@@ -34,7 +34,7 @@ public class CodariOauth2UserService extends DefaultOAuth2UserService {
     OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
 
     try {
-      return processOAuth2User(oAuth2UserRequest, oAuth2User);
+      return processOAuth2User(oAuth2UserRequest, oAuth2User).block();
     } catch (AuthenticationException ex) {
       throw ex;
     } catch (Exception ex) {
@@ -56,21 +56,18 @@ public class CodariOauth2UserService extends DefaultOAuth2UserService {
       throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
     }
 
-    Optional<User> userOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
-    Mono<User> user;
-    if(userOptional.isPresent()) {
-      user = userOptional.get();
-      if(!user.oauthInfo.providerName.equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
-        throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
-            user.oauthInfo.providerName + " account. Please use your " + user.oauthInfo.providerName +
-            " account to login.");
-      }
-      user = updateExistingUser(user, oAuth2UserInfo);
-    } else {
-      user = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
-    }
-
-    return UserPrincipal.create(user, oAuth2User.getAttributes());
+    return userRepository.findByEmail(oAuth2UserInfo.getEmail())
+        .switchIfEmpty(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
+        .flatMap(user -> {
+          if(!user.oauthInfo.providerName.equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
+            throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
+                user.oauthInfo.providerName + " account. Please use your " + user.oauthInfo.providerName +
+                " account to login.");
+          }
+          return updateExistingUser(user, oAuth2UserInfo);
+        })
+        .map((user) -> UserPrincipal.create(user, oAuth2User.getAttributes()))
+        ;
   }
 
   /**
