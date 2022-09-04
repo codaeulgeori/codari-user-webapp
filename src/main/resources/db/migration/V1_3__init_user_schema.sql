@@ -13,11 +13,13 @@ create table `codari-user`.tb_user (
 
    `location_exposure` char(1) DEFAULT NULL,
    `profile_image` varchar(255) DEFAULT NULL,
+   `email` varchar(255) NOT NULL,
    `additional_verification_code` varchar(10) DEFAULT NULL,
 
    `created_datetime` datetime DEFAULT NULL,
    `update_datetime` datetime DEFAULT NULL,
-   PRIMARY KEY (`user_id`)
+   PRIMARY KEY (`user_id`),
+   UNIQUE KEY (`email`)
 ) ;
 
 

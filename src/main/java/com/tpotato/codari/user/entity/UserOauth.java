@@ -9,16 +9,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
+@Table("tb_user_oauth")
 public class UserOauth extends CommonEntity{
   @Id
   public Long userOauthId;
 
   public Long userId;
 
-  public AuthProvider providerName;
+  public AuthProvider vender;
   public String providerId;
   public String userName;
   public String userProfileImage;

@@ -1,5 +1,6 @@
 package com.tpotato.codari.user.service;
 
+import com.tpotato.codari.user.dao.UserOauthRepository;
 import com.tpotato.codari.user.dao.UserRepository;
 import com.tpotato.codari.user.domain.UserPrincipal;
 import com.tpotato.codari.user.domain.enumerator.AuthProvider;
@@ -8,28 +9,27 @@ import com.tpotato.codari.user.domain.oauth2.OAuth2UserInfoFactory;
 import com.tpotato.codari.user.entity.User;
 import com.tpotato.codari.user.entity.UserOauth;
 import com.tpotato.codari.user.exception.BuildDataFailException;
-import com.tpotato.codari.user.exception.OAuth2AuthenticationProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-
-import java.util.Optional;
 
 @Slf4j @RequiredArgsConstructor
 @Service
 public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
 
   private final UserRepository userRepository;
+  private final UserOauthRepository userOauthRepository;
 
+  @Transactional
   @Override
   public Mono<OAuth2User> loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
     Mono<OAuth2User> oAuth2User = super.loadUser(oAuth2UserRequest);
@@ -52,26 +52,18 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
    * @return
    */
   private Mono<OAuth2User> processOAuth2User(OAuth2UserRequest oAuth2UserRequest, Mono<OAuth2User> oAuth2User) {
-    OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
-    if(StringUtils.isEmpty(oAuth2UserInfo.getEmail())) {
-      throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
-    }
-
-    return userRepository.findByEmail(oAuth2UserInfo.getEmail())
-        .switchIfEmpty(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
-        .flatMap(user -> {
-          if(!user.oauthInfo.providerName.equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
-            throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
-                user.oauthInfo.providerName + " account. Please use your " + user.oauthInfo.providerName +
-                " account to login.");
-          }
-          return updateExistingUser(user, oAuth2UserInfo);
-        })
-        .map((user) -> (OAuth2User) oAuth2User.map(o ->
-              UserPrincipal.create(user, o.getAttributes())
-        ));
-
+    return oAuth2User.map((user) ->
+            OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), user.getAttributes())
+          )
+        .filter((oAuth2UserInfo -> !StringUtils.isEmpty(oAuth2UserInfo.getEmail())))
+        .flatMap(oAuth2UserInfo ->
+          userRepository.findByEmail(oAuth2UserInfo.getEmail())
+              .or(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
+              .flatMap(user -> updateExistingUser(user, oAuth2UserInfo))
+              .map(user -> UserPrincipal.create(user, oAuth2UserInfo.getAttributes()))
+        );
   }
+
 
   /**
    * DB에 존재하지 않는 경우 새로 등록
@@ -79,28 +71,34 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
    * @param oAuth2UserInfo
    * @return
    */
-  //TODO : oauthInfo table 에 userId 의 정보가 잘 들어가는지 확인 필요.
   private Mono<User> registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
     User user;
+    UserOauth userOauth;
     try {
+      userOauth =
+          UserOauth.builder()
+              .providerId(oAuth2UserInfo.getId())
+              .vender(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase()))
+              .userEmail(oAuth2UserInfo.getEmail())
+              .userProfileImage(oAuth2UserInfo.getImageUrl())
+              .userName(oAuth2UserInfo.getName())
+              .build();
       user = User.builder()
-          .name(oAuth2UserInfo.getName())
-          .email(oAuth2UserInfo.getEmail())
+          .codariName(oAuth2UserInfo.getName())
           .profileImage(oAuth2UserInfo.getImageUrl())
-          .oauthInfo(
-              UserOauth.builder()
-                  .providerId(oAuth2UserInfo.getId())
-                  .providerName(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))
-                  .userEmail(oAuth2UserInfo.getEmail())
-                  .userProfileImage(oAuth2UserInfo.getImageUrl())
-                  .userName(oAuth2UserInfo.getName())
-                  .build())
-          .grade('?')
+          .email(oAuth2UserInfo.getEmail())
+          .additionalVerificationCode("0000")
+          .grade("?")
           .build();
     } catch (Exception e) {
-      throw new BuildDataFailException("registerNewUser() oAuth2UserInfo : "+ oAuth2UserInfo);
+      throw new BuildDataFailException("registerNewUser - oAuth2UserInfo : "+ oAuth2UserInfo, e);
     }
-    return userRepository.save(user);
+    return userRepository.save(user)
+        .doOnNext(savedUser -> {
+          //TODO : 왜 갑자기 여기를 안들어오지?
+          userOauth.setUserId(savedUser.userId);
+          userOauthRepository.save(userOauth);
+        });
   }
 
   /**
@@ -110,11 +108,16 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
    * @return
    */
   private Mono<User> updateExistingUser(User existingUser, OAuth2UserInfo oAuth2UserInfo) {
-    existingUser.oauthInfo.update(
-        oAuth2UserInfo.getName(),
-        oAuth2UserInfo.getImageUrl()
-    );
-    return userRepository.save(existingUser);
+    userOauthRepository.save(UserOauth.builder()
+        .userId(existingUser.userId)
+        .userProfileImage(oAuth2UserInfo.getImageUrl())
+        .userName(oAuth2UserInfo.getName())
+        .build());
+
+    return userRepository.save(User.builder()
+        .userId(existingUser.userId)
+        .profileImage(oAuth2UserInfo.getImageUrl())
+        .build());
   }
 
 }

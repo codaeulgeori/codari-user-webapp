@@ -57,7 +57,7 @@ public class Oauth2SecurityConfig  {
 //          .logout(l -> l
 //              .logoutSuccessUrl("/").permitAll()
 //          )
-          .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
+//          .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
 
         .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // stateless방식의 애플리케이션이 되도록 설정
 

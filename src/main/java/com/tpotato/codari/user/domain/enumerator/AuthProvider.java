@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum AuthProvider {
     LOCAL("TEST"),
-    KAKAO("K"),
-    NAVER("N"),
-    GOOGLE("G"),
-    FACEBOOK("F"),
-    GITHUB("GH");
+    KAKAO("kakao"),
+    NAVER("naver"),
+    GOOGLE("google"),
+    FACEBOOK("facebook"),
+    GITHUB("github");
 
     public String code;
 }
