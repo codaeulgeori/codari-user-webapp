@@ -42,5 +42,6 @@ spring:
 
 app-security:
   auth:
-    tokenSecret: CODARI-SECRET #JWT Secret Key
+    tokenSecret: CODARI-SECRETCODARI-SECRETCODARI-SECRETCODARI-SECRETCODARI-SECRET
     tokenExpirationMsec: 864000000
+

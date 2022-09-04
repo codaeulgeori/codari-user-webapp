@@ -1,16 +1,18 @@
 package com.tpotato.codari.user.config;
 
+import com.tpotato.codari.user.component.JwtTokenProvider;
 import com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.tpotato.codari.user.service.CodariOauth2UserService;
+import com.tpotato.codari.user.filter.JwtTokenAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
@@ -23,10 +25,10 @@ import reactor.core.publisher.Mono;
 @EnableReactiveMethodSecurity
 public class Oauth2SecurityConfig  {
 
-  private final CodariOauth2UserService oAuth2UserService;
-
   @Bean
-  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
+  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
+                                                       JwtTokenProvider jwtTokenProvider
+                                                       ){
     return http
           .cors()
         .and()
@@ -55,10 +57,18 @@ public class Oauth2SecurityConfig  {
 //          .logout(l -> l
 //              .logoutSuccessUrl("/").permitAll()
 //          )
-//          .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
+          .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
 
         .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // stateless방식의 애플리케이션이 되도록 설정
-        .oauth2Client(Customizer.withDefaults())
+
+        .formLogin().disable()
+        .httpBasic().disable()
+
+        .oauth2Login()
+//          .authenticationManager(authenticationManager)
+          .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+
+        .and()
         .build();
 //            .authenticationConverter(converter)
 //            .authenticationManager(reactiveAuthenticationManager) // 인증 여부 체크
@@ -87,4 +97,6 @@ public class Oauth2SecurityConfig  {
   public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
     return new HttpCookieOAuth2AuthorizationRequestRepository();
   }
+
+
 }
