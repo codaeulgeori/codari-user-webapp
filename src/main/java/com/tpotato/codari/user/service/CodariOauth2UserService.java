@@ -58,7 +58,7 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
         .filter((oAuth2UserInfo -> !StringUtils.isEmpty(oAuth2UserInfo.getEmail())))
         .flatMap(oAuth2UserInfo ->
           userRepository.findByEmail(oAuth2UserInfo.getEmail())
-              .or(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
+              .switchIfEmpty(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
               .flatMap(user -> updateExistingUser(user, oAuth2UserInfo))
               .map(user -> UserPrincipal.create(user, oAuth2UserInfo.getAttributes()))
         );
@@ -88,17 +88,23 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
           .profileImage(oAuth2UserInfo.getImageUrl())
           .email(oAuth2UserInfo.getEmail())
           .additionalVerificationCode("0000")
+          .locationExposure("N")
           .grade("?")
           .build();
     } catch (Exception e) {
       throw new BuildDataFailException("registerNewUser - oAuth2UserInfo : "+ oAuth2UserInfo, e);
     }
     return userRepository.save(user)
-        .doOnNext(savedUser -> {
-          //TODO : 왜 갑자기 여기를 안들어오지?
+        .flatMap(savedUser -> {
+          user.setUserId(savedUser.userId);
+          user.setCreatedDatetime(savedUser.getCreatedDatetime());
+          user.setUpdateDatetime(savedUser.getUpdateDatetime());
+
           userOauth.setUserId(savedUser.userId);
-          userOauthRepository.save(userOauth);
-        });
+          return userOauthRepository.save(userOauth);
+        })
+        .flatMap(savedOauth -> Mono.just(user))
+        ;
   }
 
   /**
@@ -114,10 +120,7 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
         .userName(oAuth2UserInfo.getName())
         .build());
 
-    return userRepository.save(User.builder()
-        .userId(existingUser.userId)
-        .profileImage(oAuth2UserInfo.getImageUrl())
-        .build());
+    return Mono.just(existingUser);
   }
 
 }
