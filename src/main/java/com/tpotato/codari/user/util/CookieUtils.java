@@ -8,18 +8,11 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.SerializationUtils;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.server.HttpServerRequest;
-import reactor.netty.http.server.HttpServerResponse;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 public class CookieUtils {
+  public static final int COOKIE_EXPIRE_SECONDS = 180;
 
   public static Mono<HttpCookie> getCookie(ServerHttpRequest request, String name) {
     MultiValueMap<String, HttpCookie> cookies = request.getCookies();

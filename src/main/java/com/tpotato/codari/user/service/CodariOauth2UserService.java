@@ -58,10 +58,18 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
         .filter((oAuth2UserInfo -> !StringUtils.isEmpty(oAuth2UserInfo.getEmail())))
         .flatMap(oAuth2UserInfo ->
           userRepository.findByEmail(oAuth2UserInfo.getEmail())
-              .switchIfEmpty(registerNewUser(oAuth2UserRequest, oAuth2UserInfo))
               .flatMap(user -> updateExistingUser(user, oAuth2UserInfo))
+              .switchIfEmpty(makeUserWithOauth2UserInfo(oAuth2UserInfo))
+
               .map(user -> UserPrincipal.create(user, oAuth2UserInfo.getAttributes()))
         );
+  }
+
+  private Mono<User> makeUserWithOauth2UserInfo(OAuth2UserInfo userInfo) {
+    User user = User.builder()
+        .email(userInfo.getEmail())
+        .build();
+    return Mono.just(user);
   }
 
 

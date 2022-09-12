@@ -2,22 +2,26 @@ package com.tpotato.codari.user.domain;
 
 import com.tpotato.codari.user.entity.User;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-public class UserPrincipal implements OAuth2User, UserDetails {
+@Getter @Setter
+public class UserPrincipal implements OAuth2User, UserDetails, Serializable {
   private Long id;
   private String email;
   private Collection<? extends GrantedAuthority> authorities;
   private Map<String, Object> attributes;
+  private String code;
+  private String state;
 
   public UserPrincipal(Long id, String email, Collection<? extends GrantedAuthority> authorities) {
     this.id = id;

@@ -3,6 +3,7 @@ package com.tpotato.codari.user.config;
 import com.tpotato.codari.user.component.JwtTokenProvider;
 import com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tpotato.codari.user.filter.JwtTokenAuthenticationFilter;
+import com.tpotato.codari.user.handler.Oauth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class Oauth2SecurityConfig  {
+  private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
 
   @Bean
   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
@@ -39,7 +41,7 @@ public class Oauth2SecurityConfig  {
 
         .authorizeExchange()
               .pathMatchers(HttpMethod.OPTIONS).permitAll()
-              .pathMatchers("/", "/error","/login/**", "/oauth2/**").permitAll()
+              .pathMatchers("/", "/error","/login/**", "/oauth2/**", "/user/**").permitAll()
               .anyExchange().authenticated()
         .and()
 
@@ -67,7 +69,8 @@ public class Oauth2SecurityConfig  {
         .oauth2Login()
 //          .authenticationManager(authenticationManager)
           .authorizationRequestRepository(cookieAuthorizationRequestRepository())
-
+          .authenticationSuccessHandler(oauth2LoginSuccessHandler)
+//          .authenticationFailureHandler()
         .and()
         .build();
 //            .authenticationConverter(converter)

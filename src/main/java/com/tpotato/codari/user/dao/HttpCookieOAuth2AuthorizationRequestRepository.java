@@ -4,15 +4,13 @@ import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.tpotato.codari.user.util.CookieUtils;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static com.tpotato.codari.user.util.CookieUtils.COOKIE_EXPIRE_SECONDS;
 
 /**
  * 인증 요청을 coockie 에 저장하고 검색
@@ -21,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 public class HttpCookieOAuth2AuthorizationRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
     public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
     public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
-    private static final int cookieExpireSeconds = 180;
+
 
     public void removeAuthorizationRequestCookies(ServerHttpRequest request, ServerHttpResponse response) {
         CookieUtils.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
@@ -44,13 +42,13 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements ServerAut
             return Mono.empty();
         }
 
-        CookieUtils.addCookie(exchange.getResponse(), OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, CookieUtils.serialize(authorizationRequest), cookieExpireSeconds);
+        CookieUtils.addCookie(exchange.getResponse(), OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, CookieUtils.serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
 
         // 요기는 http://localhost:3000/oauth2/redirect 가 들어간다.
         String redirectUriAfterLogin = exchange.getRequest().getQueryParams().getFirst(REDIRECT_URI_PARAM_COOKIE_NAME);
 
         if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
-            CookieUtils.addCookie(exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, cookieExpireSeconds);
+            CookieUtils.addCookie(exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS);
         }
         return Mono.empty();
     }
