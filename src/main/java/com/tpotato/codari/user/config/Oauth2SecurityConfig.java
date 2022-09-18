@@ -1,8 +1,6 @@
 package com.tpotato.codari.user.config;
 
-import com.tpotato.codari.user.component.JwtTokenProvider;
 import com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.tpotato.codari.user.filter.JwtTokenAuthenticationFilter;
 import com.tpotato.codari.user.handler.Oauth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,12 +9,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
-import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 import reactor.core.publisher.Mono;
 
 
@@ -28,9 +25,7 @@ public class Oauth2SecurityConfig  {
   private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
 
   @Bean
-  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
-                                                       JwtTokenProvider jwtTokenProvider
-                                                       ){
+  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
     return http
           .cors()
         .and()

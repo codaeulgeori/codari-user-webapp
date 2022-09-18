@@ -44,7 +44,7 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
       UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
       userPrincipal.setCode(exchange.getRequest().getQueryParams().getFirst("code"));
       userPrincipal.setState(exchange.getRequest().getQueryParams().getFirst("state"));
-      CookieUtils.addCookie(exchange.getResponse(), "user_data", CookieUtils.serialize(authentication.getPrincipal()), COOKIE_EXPIRE_SECONDS);
+      CookieUtils.addCookie(exchange.getResponse(), "user_data", CookieUtils.serialize(authentication), COOKIE_EXPIRE_SECONDS);
 
       return this.requestCache.getRedirectUri(exchange)
           .defaultIfEmpty(URI.create("/user/v1"))

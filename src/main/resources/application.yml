@@ -45,3 +45,8 @@ app-security:
     tokenSecret: CODARI-SECRETCODARI-SECRETCODARI-SECRETCODARI-SECRETCODARI-SECRET
     tokenExpirationMsec: 864000000
 
+codari:
+  token:
+    name: CODARI-TOKEN
+    cookie:
+      ageSec: 3600

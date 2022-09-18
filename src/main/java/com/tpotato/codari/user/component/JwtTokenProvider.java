@@ -1,12 +1,10 @@
 package com.tpotato.codari.user.component;
 
 import com.tpotato.codari.user.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 
 import io.jsonwebtoken.security.Keys;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
  * Authorization <-> JwtToken 변환
  */
 
-@Slf4j
+@Slf4j @NoArgsConstructor
 @Component
 public class JwtTokenProvider {
 
@@ -38,11 +36,7 @@ public class JwtTokenProvider {
 
   @Value("${app-security.auth.tokenExpirationMsec}")
   private String expirationTime;
-
   private SecretKey secretKey;
-
-  public JwtTokenProvider() {
-  }
 
   @PostConstruct
   public void init() {
@@ -67,7 +61,7 @@ public class JwtTokenProvider {
         .setSubject(username)
         .setIssuedAt(createdDate)
         .setExpiration(expirationDate)
-        .signWith(secretKey)
+        .signWith(SignatureAlgorithm.HS512, secretKey)
         .compact();
   }
 

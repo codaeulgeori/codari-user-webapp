@@ -1,5 +1,6 @@
 package com.tpotato.codari.user.service;
 
+import com.tpotato.codari.user.component.JwtTokenProvider;
 import com.tpotato.codari.user.dao.UserOauthRepository;
 import com.tpotato.codari.user.dao.UserRepository;
 import com.tpotato.codari.user.domain.UserPrincipal;
@@ -11,6 +12,7 @@ import com.tpotato.codari.user.entity.User;
 import com.tpotato.codari.user.entity.UserOauth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -21,9 +23,11 @@ import reactor.core.publisher.Mono;
 public class UserService {
   private final UserRepository userRepository;
   private final UserOauthRepository userOauthRepository;
+  private final JwtTokenProvider tokenProvider;
 
   @Transactional
-  public Mono<User> registerNewUser(UserPrincipal userPrincipal, UserProfile userProfile) {
+  public Mono<String> registerNewUserAndMakeJwt(Authentication authentication, UserProfile userProfile) {
+    UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
     OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(userPrincipal.getVender(), userPrincipal.getAttributes());
     log.info("registerNewUser.oAuth2UserInfo : {}", oAuth2UserInfo);
 
@@ -45,6 +49,13 @@ public class UserService {
               .userProfileImage(oAuth2UserInfo.getImageUrl())
               .build())
               .map(userOauth -> user)
-        );
+        )
+        .map(user -> makeAccessToken(authentication));
   }
+
+  private String makeAccessToken(Authentication authentication) {
+    return tokenProvider.createToken(authentication);
+  }
+
+
 }
