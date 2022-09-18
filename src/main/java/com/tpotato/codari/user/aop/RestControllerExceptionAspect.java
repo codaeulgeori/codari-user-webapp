@@ -13,8 +13,8 @@ public class RestControllerExceptionAspect {
 
   @ExceptionHandler(value = RuntimeException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseData badRequestHandler() {
-    log.error("badRequestHandler : {}");
-    return ResponseData.builder().build();
+  public ResponseData badRequestHandler(RuntimeException e) {
+    log.error("badRequestHandler : ", e);
+    return ResponseData.builder().statusCause(e.getCause().toString()).statusMsg(e.getMessage()).build();
   }
 }

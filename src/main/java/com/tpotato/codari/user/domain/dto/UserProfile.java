@@ -5,8 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 @Data
-public class UserRegister {
+public class UserProfile {
+  public String codariName;
 }

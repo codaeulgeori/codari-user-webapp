@@ -61,7 +61,7 @@ public class CodariOauth2UserService extends DefaultReactiveOAuth2UserService {
               .flatMap(user -> updateExistingUser(user, oAuth2UserInfo))
               .switchIfEmpty(makeUserWithOauth2UserInfo(oAuth2UserInfo))
 
-              .map(user -> UserPrincipal.create(user, oAuth2UserInfo.getAttributes()))
+              .map(user -> UserPrincipal.create(user, oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2UserInfo.getAttributes()))
         );
   }
 

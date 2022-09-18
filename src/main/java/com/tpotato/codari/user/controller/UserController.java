@@ -2,7 +2,7 @@ package com.tpotato.codari.user.controller;
 
 import com.tpotato.codari.user.domain.UserPrincipal;
 import com.tpotato.codari.user.domain.dto.ResponseData;
-import com.tpotato.codari.user.domain.dto.UserRegister;
+import com.tpotato.codari.user.domain.dto.UserProfile;
 import com.tpotato.codari.user.service.UserService;
 import com.tpotato.codari.user.util.CookieUtils;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +32,17 @@ public class UserController {
   }
 
   @RequestMapping(method = RequestMethod.POST)
-  public Mono<ResponseData> register(@RequestBody UserRegister userRegister,
+  public Mono<ResponseData> register(@RequestBody UserProfile userProfile,
                                      ServerWebExchange exchange) {
-    //TODO : get cookie (provider's user data - deserialize) & insert db & make JWT with authorization code
+    //TODO : get cookie (provider's user data - deserialize)
     Mono<UserPrincipal> userPrincipal = CookieUtils.getCookie(exchange.getRequest(), "user_data")
         .map(httpCookie -> CookieUtils.deserialize(httpCookie, UserPrincipal.class));
-    //TODO : redirect homepage with JWT cookie
-    return Mono.just(ResponseData.builder().resultData(userPrincipal).build());
+
+    return userPrincipal.flatMap((up) ->
+        //TODO : insert db & make JWT with authorization code
+          userService.registerNewUser(up, userProfile)
+        )
+        .map((res) -> ResponseData.builder()
+            .resultData(res).build());
   }
 }
