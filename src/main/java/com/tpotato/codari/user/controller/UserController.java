@@ -32,9 +32,9 @@ public class UserController {
   @RequestMapping(method = RequestMethod.GET)
   public Mono<ResponseData> getUser(ServerWebExchange exchange){
     Mono<ResponseData> responseData = CookieUtils.getCookie(exchange.getRequest(), "user_data")
-        .map(httpCookie -> (UserPrincipal)CookieUtils.deserialize(httpCookie, UserPrincipal.class))
-        .map(userPrincipal -> {
-          return ResponseData.builder().resultData(userPrincipal).build();
+        .map(httpCookie -> (Authentication)CookieUtils.deserialize(httpCookie, Authentication.class))
+        .map(authentication -> {
+          return ResponseData.builder().resultData(authentication).build();
         });
     return responseData;
   }
@@ -53,5 +53,16 @@ public class UserController {
         )
         .map((res) -> ResponseData.builder()
             .resultData(res).build());
+  }
+
+  @RequestMapping(path = "/decodeJwt", method = RequestMethod.GET)
+  public Mono<ResponseData> getUserWithJWT(ServerWebExchange exchange){
+    Mono<ResponseData> responseData = CookieUtils.getCookie(exchange.getRequest(),tokenName)
+        .filter(httpCookie -> tokenName.equals(httpCookie.getName()))
+        .map(httpCookie -> userService.deserializeJWT(httpCookie.getValue()))
+        .map(authentication -> {
+          return ResponseData.builder().resultData(authentication).build();
+        });
+    return responseData;
   }
 }

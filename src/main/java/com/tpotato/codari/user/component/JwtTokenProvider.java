@@ -74,8 +74,9 @@ public class JwtTokenProvider {
     Collection<? extends GrantedAuthority> authorities = authoritiesClaim == null ? AuthorityUtils.NO_AUTHORITIES
         : AuthorityUtils.commaSeparatedStringToAuthorityList(authoritiesClaim.toString());
 
-//    User principal = new User(claims.getSubject(), "", authorities);
-    User principal = User.builder().build();
+    User principal = User.builder()
+                          .email(claims.getSubject())
+                          .build();
     return new UsernamePasswordAuthenticationToken(principal, token, authorities);
   }
 

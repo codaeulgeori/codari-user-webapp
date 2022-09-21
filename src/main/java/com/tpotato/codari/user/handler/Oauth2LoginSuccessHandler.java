@@ -1,17 +1,19 @@
 package com.tpotato.codari.user.handler;
 
 
+import com.tpotato.codari.user.component.JwtTokenProvider;
 import com.tpotato.codari.user.domain.UserPrincipal;
 import com.tpotato.codari.user.util.CookieUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseCookie;
-import org.springframework.lang.Nullable;
+import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;
 import org.springframework.security.web.server.WebFilterExchange;
-import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
+
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
 import org.springframework.security.web.server.savedrequest.WebSessionServerRequestCache;
@@ -26,16 +28,21 @@ import static com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRe
 import static com.tpotato.codari.user.util.CookieUtils.COOKIE_EXPIRE_SECONDS;
 
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 @Component
 public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHandler {
+  @Value("${codari.token.name}")
+  String tokenName;
 
-  //TODO : 회원가입시 작성하는 프로필 작성 페이지로 redirect
+  @Value("${codari.token.cookie.ageSec}")
+  Integer tokenCookieAgeSec;
+
+  private final JwtTokenProvider tokenProvider;
+
   private ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
   private ServerRequestCache requestCache = new WebSessionServerRequestCache();
 
-  public Oauth2LoginSuccessHandler() {
-  }
+
 
   public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
     ServerWebExchange exchange = webFilterExchange.getExchange();
@@ -52,10 +59,11 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
             return this.redirectStrategy.sendRedirect(exchange, location);
           });
     } else {
-      //TODO : 기존에 있는 유저면 jwt token 생성 후 homepage 로 redirect
       return this.requestCache.getRedirectUri(exchange)
-          .defaultIfEmpty(URI.create("/"))
+          .defaultIfEmpty(URI.create("/user/decodeJwt"))
           .flatMap((location) -> {
+            String jwt = makeAccessToken(authentication);
+            CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, tokenCookieAgeSec);
             return this.redirectStrategy.sendRedirect(exchange, location);
           });
     }
@@ -64,6 +72,10 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
 
   private boolean isUserNewbie(Authentication authentication) {
     return ((UserPrincipal)authentication.getPrincipal()).getId() == null;
+  }
+
+  private String makeAccessToken(Authentication authentication) {
+    return tokenProvider.createToken(authentication);
   }
 
   private Mono<OAuth2AuthorizationRequest> getOauth2CookieAndDeserialize(ServerWebExchange exchange) {

@@ -57,5 +57,10 @@ public class UserService {
     return tokenProvider.createToken(authentication);
   }
 
+  /* FOR TEST */
+  public Authentication deserializeJWT (String jwt) {
+    return tokenProvider.getAuthentication(jwt);
+  }
+
 
 }

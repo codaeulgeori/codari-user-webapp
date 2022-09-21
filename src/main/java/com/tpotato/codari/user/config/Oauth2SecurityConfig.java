@@ -31,9 +31,10 @@ public class Oauth2SecurityConfig  {
           .cors()
         .and()
 
-        .csrf()
-            .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-        .and()
+//        .csrf()
+//            .csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+//        .and()
+        .csrf().disable()
 
         .authorizeExchange()
               .pathMatchers(HttpMethod.OPTIONS).permitAll()
