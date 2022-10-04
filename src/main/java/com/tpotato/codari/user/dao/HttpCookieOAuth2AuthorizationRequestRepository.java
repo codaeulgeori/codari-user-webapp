@@ -42,13 +42,13 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements ServerAut
             return Mono.empty();
         }
 
-        CookieUtils.addCookie(exchange.getResponse(), OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, CookieUtils.serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
+        CookieUtils.addCookie(exchange.getResponse(), OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, CookieUtils.serialize(authorizationRequest), null, COOKIE_EXPIRE_SECONDS);
 
         // 요기는 http://localhost:3000/oauth2/redirect 가 들어간다.
         String redirectUriAfterLogin = exchange.getRequest().getQueryParams().getFirst(REDIRECT_URI_PARAM_COOKIE_NAME);
 
         if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
-            CookieUtils.addCookie(exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS);
+            CookieUtils.addCookie(exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, null, COOKIE_EXPIRE_SECONDS);
         }
         return Mono.empty();
     }

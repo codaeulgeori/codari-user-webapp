@@ -21,6 +21,9 @@ import reactor.core.publisher.Mono;
 public class UserController {
   private final UserService userService;
 
+  @Value("${codari.url}")
+  String codariUrl;
+
   @Value("${codari.token.name}")
   String tokenName;
 
@@ -46,7 +49,7 @@ public class UserController {
     return authentication.flatMap((auth) ->
           userService.registerNewUserAndMakeJwt(auth, userProfile)
               .doOnSuccess(jwt -> {
-                CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, Integer.parseInt(tokenCookieAgeSec));
+                CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, codariUrl, Integer.parseInt(tokenCookieAgeSec));
               })
         )
         .map((res) -> ResponseData.builder()

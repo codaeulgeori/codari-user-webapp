@@ -46,3 +46,6 @@ app-security:
   oauth2:
     authorizedRedirectUris:
       - 'http://localhost:8080/oauth2/redirect'
+
+codari:
+  url: 'localhost:8080'
