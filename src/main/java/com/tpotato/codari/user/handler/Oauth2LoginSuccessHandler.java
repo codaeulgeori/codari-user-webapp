@@ -59,11 +59,11 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
             return this.redirectStrategy.sendRedirect(exchange, location);
           });
     } else {
+      String jwt = makeAccessToken(authentication);
+      CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, tokenCookieAgeSec);
       return this.requestCache.getRedirectUri(exchange)
           .defaultIfEmpty(URI.create("https://cooodari.com/"))
           .flatMap((location) -> {
-            String jwt = makeAccessToken(authentication);
-            CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, tokenCookieAgeSec);
             return this.redirectStrategy.sendRedirect(exchange, location);
           });
     }

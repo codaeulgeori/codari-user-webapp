@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = {"/user/v1", "/user"})
+@RequestMapping(path = {"/user/v1", "/user"}, consumes = "application/json", produces = "application/json")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
   private final UserService userService;
