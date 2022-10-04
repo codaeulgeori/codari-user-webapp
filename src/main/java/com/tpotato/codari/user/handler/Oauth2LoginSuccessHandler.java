@@ -54,13 +54,13 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
       CookieUtils.addCookie(exchange.getResponse(), "user_data", CookieUtils.serialize(authentication), COOKIE_EXPIRE_SECONDS);
 
       return this.requestCache.getRedirectUri(exchange)
-          .defaultIfEmpty(URI.create("/user/v1"))
+          .defaultIfEmpty(URI.create("https://cooodari.com/signup"))
           .flatMap((location) -> {
             return this.redirectStrategy.sendRedirect(exchange, location);
           });
     } else {
       return this.requestCache.getRedirectUri(exchange)
-          .defaultIfEmpty(URI.create("/user/decodeJwt"))
+          .defaultIfEmpty(URI.create("https://cooodari.com/"))
           .flatMap((location) -> {
             String jwt = makeAccessToken(authentication);
             CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, tokenCookieAgeSec);
