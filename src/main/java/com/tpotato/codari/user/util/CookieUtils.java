@@ -13,6 +13,7 @@ import java.util.Base64;
 @Slf4j
 public class CookieUtils {
   public static final int COOKIE_EXPIRE_SECONDS = 180;
+  public static final String CODARI_DOMAIN = "cooodari.com";
 
   public static Mono<HttpCookie> getCookie(ServerHttpRequest request, String name) {
     MultiValueMap<String, HttpCookie> cookies = request.getCookies();
@@ -21,6 +22,7 @@ public class CookieUtils {
 
   public static void addCookie(ServerHttpResponse response, String name, String value, int maxAge) {
     response.addCookie(ResponseCookie.from(name, value)
+            .domain(CODARI_DOMAIN)
             .path("/")
             .httpOnly(true)
             .maxAge(maxAge)
