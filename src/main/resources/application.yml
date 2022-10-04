@@ -24,7 +24,7 @@ spring:
           kakao:
             client-id: 3ca7b5b6af230388cc1c04e985bd4128
             client-secret: QzUA5LZYjfWeGVjNu3FtS5CVyviaYZKg
-            redirect-uri: 'http://3.38.36.193/login/oauth2/code/kakao'
+            redirect-uri: 'http://cooodari.com/login/oauth2/code/kakao'
             authorization-grant-type: authorization_code
             client-authentication-method: POST
             client-name: Kakao
