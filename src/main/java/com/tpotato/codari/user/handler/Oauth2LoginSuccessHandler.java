@@ -64,11 +64,7 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
     } else {
       String jwt = makeAccessToken(authentication);
       CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, codariUrl, tokenCookieAgeSec);
-      return this.requestCache.getRedirectUri(exchange)
-          .defaultIfEmpty(URI.create("https://cooodari.com/"))
-          .flatMap((location) -> {
-            return this.redirectStrategy.sendRedirect(exchange, location);
-          });
+      return Mono.empty();
     }
 
   }

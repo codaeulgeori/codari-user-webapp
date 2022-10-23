@@ -49,4 +49,4 @@ codari:
   token:
     name: CODARI-TOKEN
     cookie:
-      ageSec: 3600
+      ageSec: 864000000
