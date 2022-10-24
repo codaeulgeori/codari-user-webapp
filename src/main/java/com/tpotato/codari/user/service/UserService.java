@@ -57,10 +57,27 @@ public class UserService {
     return tokenProvider.createToken(authentication);
   }
 
+  @Transactional
+  public Mono<String> withdrawal(AuthProvider provider, Long providerId) {
+    return userOauthRepository.findByVenderAndProviderId(provider, providerId)
+        .doOnNext(userOauth -> userOauthRepository.deleteByUserOauthId(userOauth.userOauthId))
+        .doOnNext(userOauth -> userRepository.deleteByUserId(userOauth.userId))
+        .doOnSuccess((userOauth) -> {
+          log.info("success withdrawal provider : {}, providerId : {}", provider, providerId);
+        })
+        .doOnError(throwable -> {
+          log.error("error withdrawal - provider: {}, providerId", provider, providerId, throwable);
+          throw new RuntimeException("error");
+        })
+        .map(userOauth -> "success");
+  }
+
   /* FOR TEST */
   public Authentication deserializeJWT (String jwt) {
     return tokenProvider.getAuthentication(jwt);
   }
+
+
 
 
 }

@@ -3,8 +3,10 @@ package com.tpotato.codari.user.controller;
 import com.tpotato.codari.user.domain.UserPrincipal;
 import com.tpotato.codari.user.domain.dto.ResponseData;
 import com.tpotato.codari.user.domain.dto.UserProfile;
+import com.tpotato.codari.user.domain.enumerator.AuthProvider;
 import com.tpotato.codari.user.service.UserService;
 import com.tpotato.codari.user.util.CookieUtils;
+import io.jsonwebtoken.lang.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +58,23 @@ public class UserController {
             .resultData(res).build());
   }
 
+  @RequestMapping(path = "/withdrawal/{provider}", method = RequestMethod.POST)
+  public Mono<ResponseData> withdrawal(@PathVariable("provider") AuthProvider provider,
+                                       @RequestParam("user_id") Long userId,
+                                       @RequestParam("referrer_type") String referrerType) {
+    log.info("withdrawal callback start provider : {}, userid : {}, referrerType : {}", provider, userId, referrerType);
+    return userService.withdrawal(provider, userId)
+        .map(s -> ResponseData.builder()
+                    .resultData(String.format("withdrawal complete - provider : %s, userId : %s", provider, userId))
+                    .build());
+  }
+
+
+  /**
+   * FOR Test
+   * @param exchange
+   * @return
+   */
   @RequestMapping(path = "/decodeJwt", method = RequestMethod.GET)
   public Mono<ResponseData> getUserWithJWT(ServerWebExchange exchange){
     Mono<ResponseData> responseData = CookieUtils.getCookie(exchange.getRequest(),tokenName)
