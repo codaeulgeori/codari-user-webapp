@@ -61,7 +61,7 @@ public class UserController {
 
   @RequestMapping(path = "/withdrawal/{provider}", method = RequestMethod.POST, consumes = "application/x-www-form-urlencoded", produces = "application/x-www-form-urlencoded")
   public Mono<ResponseData> withdrawal(@PathVariable("provider") AuthProvider provider,
-                                       @RequestBody UserWithdrawal withdrawal) {
+                                       UserWithdrawal withdrawal) {
     log.info("withdrawal callback start provider : {}, UserWithdrawal : {}", provider, withdrawal);
     return userService.withdrawal(provider, withdrawal.user_id)
         .map(s -> ResponseData.builder()
