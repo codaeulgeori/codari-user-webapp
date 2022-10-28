@@ -6,8 +6,11 @@ import lombok.AllArgsConstructor;
 public enum AuthProvider {
     LOCAL("TEST"),
     KAKAO("kakao"),
+    kakao("kakao"),
     NAVER("naver"),
+    naver("naver"),
     GOOGLE("google"),
+    google("google"),
     FACEBOOK("facebook"),
     GITHUB("github");
 
