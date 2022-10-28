@@ -60,16 +60,23 @@ public class UserService {
   @Transactional
   public Mono<String> withdrawal(AuthProvider provider, Long providerId) {
     return userOauthRepository.findByVenderAndProviderId(provider, providerId)
-        .doOnNext(userOauth -> userOauthRepository.deleteByUserOauthId(userOauth.userOauthId))
-        .doOnNext(userOauth -> userRepository.deleteByUserId(userOauth.userId))
+        .switchIfEmpty(Mono.error(new RuntimeException(String.format("There is no Matched User provider : %s, providerId : %s", provider, providerId))))
+        .map(userOauth ->
+            userOauthRepository.deleteByUserOauthId(userOauth.userOauthId)
+                .doOnSuccess(unused -> log.info("UserOauthRepository::deleteByUserOauthId userOauthId : {}, result : {}", userOauth.userOauthId, unused))
+            .and(userRepository.deleteByUserId(userOauth.userId)
+                .doOnSuccess(result -> log.info("UserRepository::deleteByUserId userId : {}, result : {}", userOauth.userId, result)))
+            .subscribe()
+        )
         .doOnSuccess((userOauth) -> {
           log.info("success withdrawal provider : {}, providerId : {}", provider, providerId);
         })
         .doOnError(throwable -> {
-          log.error("error withdrawal - provider: {}, providerId", provider, providerId, throwable);
+          log.error("error withdrawal - provider: {}, providerId : {}", provider, providerId, throwable);
           throw new RuntimeException("error");
         })
-        .map(userOauth -> "success");
+        .map(userOauth -> "success")
+        .log();
   }
 
   /* FOR TEST */
