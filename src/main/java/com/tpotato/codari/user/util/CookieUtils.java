@@ -33,7 +33,7 @@ public class CookieUtils {
     cookies.forEach((k,httpCookies) -> {
       if (k.equals(name)) {
         for (HttpCookie cookie: httpCookies) {
-          response.addCookie(ResponseCookie.from(cookie.getName(), cookie.getValue()).path("/").maxAge(0).build());
+          response.addCookie(ResponseCookie.from(cookie.getName(), cookie.getValue()).maxAge(0).build());
           log.info("cookie deleted : {}", cookie);
         }
       }
