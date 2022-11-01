@@ -63,7 +63,7 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
           });
     } else {
       String jwt = makeAccessToken(authentication);
-      CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, codariUrl, tokenCookieAgeSec);
+      CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, "localhost", tokenCookieAgeSec);
       return Mono.empty();
     }
 
