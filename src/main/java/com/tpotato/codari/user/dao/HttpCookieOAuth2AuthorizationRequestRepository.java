@@ -55,6 +55,10 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements ServerAut
 
     @Override
     public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
-        return this.loadAuthorizationRequest(exchange);
+        return this.loadAuthorizationRequest(exchange)
+            .map(oAuth2AuthorizationRequest -> {
+                removeAuthorizationRequestCookies(exchange.getRequest(), exchange.getResponse());
+                return oAuth2AuthorizationRequest;
+            });
     }
 }
