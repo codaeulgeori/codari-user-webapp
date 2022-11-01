@@ -3,8 +3,11 @@ package com.tpotato.codari.user.controller;
 import com.tpotato.codari.user.domain.UserPrincipal;
 import com.tpotato.codari.user.domain.dto.ResponseData;
 import com.tpotato.codari.user.domain.dto.UserProfile;
+import com.tpotato.codari.user.domain.dto.UserWithdrawal;
+import com.tpotato.codari.user.domain.enumerator.AuthProvider;
 import com.tpotato.codari.user.service.UserService;
 import com.tpotato.codari.user.util.CookieUtils;
+import io.jsonwebtoken.lang.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +19,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(path = {"/user/v1", "/user"}, consumes = "application/json", produces = "application/json")
+@RequestMapping(path = {"/user/v1", "/user"}, produces = "application/json")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
   private final UserService userService;
@@ -56,6 +59,22 @@ public class UserController {
             .resultData(res).build());
   }
 
+  @RequestMapping(path = "/withdrawal/{provider}", method = RequestMethod.POST, consumes = "application/x-www-form-urlencoded")
+  public Mono<ResponseData> withdrawal(@PathVariable("provider") AuthProvider provider,
+                                       UserWithdrawal withdrawal) {
+    log.info("withdrawal callback start provider : {}, UserWithdrawal : {}", provider, withdrawal);
+    return userService.withdrawal(provider, withdrawal.user_id)
+        .map(s -> ResponseData.builder()
+                    .resultData(String.format("withdrawal complete - provider : %s, userId : %s", provider, withdrawal.user_id))
+                    .build());
+  }
+
+
+  /**
+   * FOR Test
+   * @param exchange
+   * @return
+   */
   @RequestMapping(path = "/decodeJwt", method = RequestMethod.GET)
   public Mono<ResponseData> getUserWithJWT(ServerWebExchange exchange){
     Mono<ResponseData> responseData = CookieUtils.getCookie(exchange.getRequest(),tokenName)

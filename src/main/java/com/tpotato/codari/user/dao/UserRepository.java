@@ -11,4 +11,7 @@ public interface UserRepository extends ReactiveCrudRepository<User, Long> {
   @Query("SELECT * FROM tb_user " +
       "WHERE email = :email")
   Mono<User> findByEmail(String email);
+
+
+  Mono<Void> deleteByUserId(Long userId);
 }
