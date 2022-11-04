@@ -124,7 +124,7 @@
                 <version>7.0.0</version>
                 <configuration>
                     <skip>true</skip>
-                    <url>jdbc:mysql://122.43.41.113:53306/codari-user</url>
+                    <url>jdbc:mysql://222.112.145.56:53306/codari-user</url>
                     <user>codari-user</user>
                     <password>codari</password>
                 </configuration>

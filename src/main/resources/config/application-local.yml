@@ -4,7 +4,7 @@ spring:
   profiles:
     include: console-logging
   r2dbc:
-    url: r2dbc:mariadb://122.43.41.113:53306/codari-user?useSSL=false
+    url: r2dbc:mariadb://222.112.145.56:53306/codari-user?useSSL=false
     username: codari-user
     password: codari
   jpa:
@@ -19,7 +19,7 @@ spring:
     baseline-on-migrate: true
     user: codari-user
     password: codari
-    url: 'jdbc:mysql://122.43.41.113:53306/codari-user?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false'
+    url: 'jdbc:mysql://222.112.145.56:53306/codari-user?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false'
   security:
     oauth2:
       client:
