@@ -65,7 +65,7 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
     } else {
       String jwt = makeAccessToken(authentication);
       CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, codariUrl, tokenCookieAgeSec);
-      CookieUtils.deleteCookie(exchange.getRequest(), exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME);
+      CookieUtils.deleteCookie(exchange.getRequest(), exchange.getResponse(), OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
       return Mono.empty();
     }
 
