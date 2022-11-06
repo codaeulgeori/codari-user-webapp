@@ -22,8 +22,8 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements ServerAut
 
 
     public void removeAuthorizationRequestCookies(ServerHttpRequest request, ServerHttpResponse response) {
-        CookieUtils.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
-        CookieUtils.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
+//        CookieUtils.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
+//        CookieUtils.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
     }
 
     @Override

@@ -25,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 import static com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRepository.OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME;
+import static com.tpotato.codari.user.dao.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 import static com.tpotato.codari.user.util.CookieUtils.COOKIE_EXPIRE_SECONDS;
 
 
@@ -64,6 +65,7 @@ public class Oauth2LoginSuccessHandler implements ServerAuthenticationSuccessHan
     } else {
       String jwt = makeAccessToken(authentication);
       CookieUtils.addCookie(exchange.getResponse(), tokenName, jwt, codariUrl, tokenCookieAgeSec);
+      CookieUtils.deleteCookie(exchange.getRequest(), exchange.getResponse(), REDIRECT_URI_PARAM_COOKIE_NAME);
       return Mono.empty();
     }
 
